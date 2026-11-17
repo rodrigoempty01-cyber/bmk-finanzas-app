@@ -25,14 +25,18 @@
 html,body{background:var(--ne);min-height:100%}
 body{font-family:Rubik,sans-serif;color:#fff;display:flex;justify-content:center;-webkit-user-select:none;user-select:none}
 input,textarea{-webkit-user-select:text;user-select:text}
-.app{width:100%;max-width:480px;min-height:100vh;background:var(--ne);position:relative;padding-bottom:calc(84px + var(--bot))}
+.app{width:100%;max-width:480px;min-height:100vh;background:var(--ne);position:relative;padding-bottom:calc(170px + var(--bot))}
 body.bloq .app{visibility:hidden}
 .t{font-family:Teko,sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase;line-height:1}
 header{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + var(--top)) 18px 10px}
 .logo{display:flex;align-items:center;gap:10px}
 .placa{background:var(--am);color:#fff;border-radius:8px;padding:3px 10px 0;letter-spacing:1px;font-family:Teko;font-weight:700;font-size:26px;line-height:1}
-.logo small{display:block;color:var(--gr);font-size:11px;letter-spacing:1.5px;font-weight:700}
-.logo b{font-size:16px}
+.logo{min-width:0}
+.logo>div{min-width:0}
+.logo small{display:block;color:var(--gr);font-size:11px;letter-spacing:1.5px;font-weight:700;white-space:nowrap}
+.logo b{font-size:16px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+header{gap:10px}
+@media (max-width:400px){.logo>div{display:none}.logo small{display:none}.hola{display:none}.logo b{font-size:15px;max-width:100px}.logo .placa{font-size:22px;padding:3px 8px 0}.mesw button{padding:6px 6px}.mesw span{min-width:58px;font-size:12px}.engr{width:34px;height:34px}}
 .mesw{display:flex;align-items:center;background:var(--ca2);border-radius:20px}
 .mesw button{background:none;border:0;color:#fff;font:600 13px Rubik;padding:7px 9px}
 .mesw span{font:600 13px Rubik;min-width:70px;text-align:center}
@@ -78,7 +82,10 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 nav button{flex:1;background:none;border:0;color:var(--gr);font:600 11px Rubik;display:flex;flex-direction:column;align-items:center;gap:3px}
 nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 nav button.on{color:var(--am)}
-.fab{position:fixed;bottom:calc(96px + var(--bot));right:max(18px,calc(50% - 222px));width:60px;height:60px;border-radius:50%;background:var(--am);border:3px solid var(--ne);box-shadow:0 6px 24px rgba(31,111,255,.45);color:#fff;font:500 40px Teko;z-index:6;padding-top:6px}
+.fab.chau{transform:translateY(160px)}
+.item .d span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .d b .autoTag{vertical-align:middle}
+.fab{position:fixed;bottom:calc(92px + var(--bot));right:max(16px,calc(50% - 224px));width:56px;height:56px;transition:transform .25s;border-radius:50%;background:var(--am);border:3px solid var(--ne);box-shadow:0 6px 24px rgba(31,111,255,.45);color:#fff;font:500 40px Teko;z-index:6;padding-top:6px}
 .velo{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:10}
 .velo.on{display:flex}
 .hoja{background:var(--ca);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:18px 18px calc(26px + var(--bot));max-height:92vh;overflow:auto}
@@ -399,12 +406,12 @@ function filaVenc(v,boton){
  else if(falta===0)tag='<span class="tag urg">Hoy</span>';
  else if(falta<=4)tag=`<span class="tag urg">En ${falta} día${falta>1?'s':''}</span>`;
  else tag=`<span class="tag">Día ${v.dia}</span>`;
- return `<div class="item ${boton?'tap':''}" ${boton?`onclick="editVenc('${v.id}')"`:''}><div class="ico">${svg(v.ico)}</div><div class="d"><b>${esc(v.n)}</b><span>${f(v.m)}</span></div>${tag}${boton&&!pag?`<button class="btns" style="margin-left:6px" onclick="event.stopPropagation();pagar('${v.id}')">Pagar</button>`:''}</div>`;
+ return `<div class="item ${boton?'tap':''}" ${boton?`onclick="editVenc('${v.id}')"`:''}><div class="ico">${svg(v.ico)}</div><div class="d"><b>${esc(v.n)}</b><span style="display:flex;gap:6px;align-items:center">${f(v.m)} ${tag}</span></div>${boton&&!pag?`<button class="btns" style="margin-left:6px" onclick="event.stopPropagation();pagar('${v.id}')">Pagar</button>`:''}</div>`;
 }
 function render(){
  const [a,mm]=cur.split('-').map(Number);
  $('mesTxt').textContent=MESES[mm-1].slice(0,3).replace(/^./,c=>c.toUpperCase())+' '+a;
- $('hola').textContent='Hola, '+(D.nombre||'');
+ $('hola').innerHTML='<span class="hola">Hola, </span>'+esc(D.nombre||'');
  $('ejemploAviso').innerHTML=D.ejemplo?`<div class="aviso az">Estás viendo <b>datos de ejemplo</b>. <a href="#" style="color:var(--am)" onclick="empezar();return false">Borrarlos y empezar</a></div>`:'';
  const ing=tot('ingreso'),gas=tot('gasto');
  const pt=Object.values(D.catg).reduce((s,c)=>s+(c.tope||0),0);
@@ -468,7 +475,7 @@ function renderForm(){
 }
 
 // ---------- navegación ----------
-function ir(v){document.querySelectorAll('.vista').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));window.scrollTo(0,0)}
+function ir(v){const fb=document.querySelector('.fab');if(fb)fb.classList.remove('chau');document.querySelectorAll('.vista').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));window.scrollTo(0,0)}
 function mover(n){const [a,m]=cur.split('-').map(Number);const d=new Date(a,m-1+n,1);cur=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');filtro='todos';render()}
 function cerrar(id){$(id).classList.remove('on')}
 let tt;function toast(t){$('toast').textContent=t;$('toast').classList.add('on');clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('on'),2000)}
@@ -612,6 +619,7 @@ async function pedirDesbloqueo(tap){
 }
 function bloquear(){if(hayBloqueo()){document.body.classList.add('bloq');desbloqueado=false;cerrar('velo');cerrar('velo2');pantallaBloqueo()}}
 $('lockBtn').onclick=()=>pedirDesbloqueo(true);
+let ultY=0;window.addEventListener('scroll',()=>{const y=window.scrollY,d=y-ultY;if(Math.abs(d)<8)return;const fab=document.querySelector('.fab');if(fab)fab.classList.toggle('chau',d>0&&y>80);ultY=y},{passive:true});
 window.addEventListener('pagehide',()=>{try{window.BMK.guardar(D)}catch(e){}});
 const SVG_CARA='<svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1"/><path d="M9 16c1.6 1.3 4.4 1.3 6 0"/></svg>';
 function iconoBloqueo(){

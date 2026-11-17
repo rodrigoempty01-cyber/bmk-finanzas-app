@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<title>Instalar BMK Finanzas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" href="icono-192.png">
+<style>
+:root{--am:#1F6FFF;--ne:#0A0A0A;--ca:#17181B;--ca2:#24262B;--gr:#9CA3AF;--ok:#3FBF6B;--mal:#E5533D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ne);color:#fff;font-family:system-ui,-apple-system,Roboto,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 16px 40px}
+.c{width:100%;max-width:460px}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.top img{width:64px;height:64px;border-radius:16px}
+h1{font-size:26px;line-height:1.1}
+.sub{color:var(--gr);font-size:14px;margin-top:4px}
+.card{background:var(--ca);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h2{font-size:18px;margin-bottom:10px}
+.paso{display:flex;gap:12px;margin:14px 0;align-items:flex-start}
+.n{width:28px;height:28px;border-radius:50%;background:var(--am);display:grid;place-items:center;font-weight:800;flex:none;font-size:14px}
+.paso p{font-size:15px;line-height:1.45}
+.paso b{color:#fff}
+.btn{display:block;width:100%;text-align:center;background:var(--am);color:#fff;border:0;border-radius:14px;padding:16px;font-size:17px;font-weight:800;text-decoration:none;margin-top:6px}
+.btn2{background:var(--ca2)}
+.aviso{background:rgba(229,83,61,.14);border-left:4px solid var(--mal);border-radius:10px;padding:12px;font-size:14px;line-height:1.4;margin-bottom:14px}
+.ok{background:rgba(63,191,107,.14);border-color:var(--ok)}
+.nota{color:var(--gr);font-size:13px;line-height:1.45;margin-top:10px}
+.ico{display:inline-block;vertical-align:middle;width:20px;height:20px}
+.tabs{display:flex;background:var(--ca2);border-radius:12px;padding:4px;margin-bottom:14px}
+.tabs button{flex:1;border:0;background:none;color:var(--gr);font-weight:700;font-size:14px;padding:10px;border-radius:9px}
+.tabs button.on{background:var(--am);color:#fff}
+.oculto{display:none}
+</style>
+</head>
+<body>
+<div class="c">
+  <div class="top"><img src="icono-192.png" alt=""><div><h1>BMK Finanzas</h1><div class="sub">Instalala en tu celular</div></div></div>
+  <div id="avisoApp"></div>
+  <div class="tabs"><button id="tA" onclick="ver('a')">Android</button><button id="tI" onclick="ver('i')">iPhone</button></div>
+
+  <section id="a">
+    <div class="card">
+      <h2>Opción 1 · Instalar la app (APK)</h2>
+      <div class="paso"><div class="n">1</div><p>Tocá el botón y descargá <b>BMK-Finanzas.apk</b>.</p></div>
+      <a class="btn" href="BMK-Finanzas.apk" download>Descargar BMK Finanzas</a>
+      <div class="paso"><div class="n">2</div><p>Abrí el archivo. Si Android te avisa, tocá <b>Configuración → Permitir de esta fuente</b> y volvé.</p></div>
+      <div class="paso"><div class="n">3</div><p>Tocá <b>Instalar</b>. Si aparece Play Protect: <b>Más detalles → Instalar de todas formas</b>.</p></div>
+      <div class="nota">La app se actualiza sola: cuando hay cambios no hace falta volver a instalarla.</div>
+    </div>
+    <div class="card">
+      <h2>Opción 2 · Desde Chrome (sin APK)</h2>
+      <button class="btn btn2" id="bInst">Instalar desde Chrome</button>
+      <div class="nota" id="nInst">Si el botón no hace nada: tocá los tres puntos ⋮ de Chrome → <b>Instalar app</b> (o "Agregar a la pantalla de inicio").</div>
+    </div>
+  </section>
+
+  <section id="i" class="oculto">
+    <div id="noSafari"></div>
+    <div class="card">
+      <h2>Instalar en iPhone</h2>
+      <div class="paso"><div class="n">1</div><p>Abrí esta página en <b>Safari</b> (el ícono de la brújula azul).</p></div>
+      <div class="paso"><div class="n">2</div><p>Tocá <b>Compartir</b> <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#1F6FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg> abajo en el medio.</p></div>
+      <div class="paso"><div class="n">3</div><p>Bajá y tocá <b>Agregar a inicio</b> → <b>Agregar</b>.</p></div>
+      <div class="paso"><div class="n">4</div><p>Abrila <b>siempre desde el ícono BMK</b> de la pantalla de inicio. La primera vez tocá el botón azul y aceptá guardar la <b>llave de acceso con Face ID</b>.</p></div>
+      <div class="nota">Apple no permite instaladores fuera del App Store sin una cuenta paga de desarrollador. Instalada así funciona igual que una app: pantalla completa, Face ID y sin internet.</div>
+    </div>
+  </section>
+
+  <div class="card">
+    <h2>Después de instalar</h2>
+    <div class="paso"><div class="n">✓</div><p>En el engranaje → <b>Automático</b> → <b>Mini servidor</b> cargá la dirección y la clave que te pasaron.</p></div>
+    <div class="paso"><div class="n">✓</div><p>Creá tu <b>PIN</b> y hacé una <b>copia de seguridad</b> de vez en cuando (Personalizar → Copia de seguridad).</p></div>
+  </div>
+  <a class="btn btn2" href="./">Abrir la app sin instalar</a>
+</div>
+<script>
+const ua=navigator.userAgent;
+const ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const app=/FBAN|FBAV|Instagram|WhatsApp|Line\/|GSA\/|Twitter|TikTok/i.test(ua);
+function ver(x){document.getElementById('a').classList.toggle('oculto',x!=='a');document.getElementById('i').classList.toggle('oculto',x!=='i');document.getElementById('tA').classList.toggle('on',x==='a');document.getElementById('tI').classList.toggle('on',x==='i')}
+ver(ios?'i':'a');
+if(app)document.getElementById('avisoApp').innerHTML='<div class="aviso"><b>Estás dentro de WhatsApp, Instagram u otra app.</b> Desde acá no se puede instalar. Tocá los tres puntos o el botón de compartir y elegí <b>Abrir en '+(ios?'Safari':'Chrome')+'</b>.</div>';
+if(ios&&(/CriOS|FxiOS|EdgiOS/.test(ua)))document.getElementById('noSafari').innerHTML='<div class="aviso">Estás en Chrome o en otro navegador. En iPhone solo se puede instalar desde <b>Safari</b>: copiá el link y pegalo en Safari.</div>';
+if(window.matchMedia('(display-mode: standalone)').matches)document.getElementById('avisoApp').innerHTML='<div class="aviso ok">La app ya está instalada en este celular.</div>';
+let ev=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;document.getElementById('nInst').textContent='Tocá el botón y después Instalar.'});
+document.getElementById('bInst').onclick=async()=>{if(ev){ev.prompt();const r=await ev.userChoice;if(r.outcome==='accepted')document.getElementById('nInst').textContent='¡Listo! Buscá el ícono BMK en tu pantalla de inicio.';ev=null}else document.getElementById('nInst').innerHTML='Tocá los tres puntos ⋮ de Chrome → <b>Instalar app</b> (o "Agregar a la pantalla de inicio").'};
+</script>
+</body>
+</html>
