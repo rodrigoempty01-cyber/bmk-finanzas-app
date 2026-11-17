@@ -121,6 +121,19 @@ textarea{min-height:110px;font-size:12px}
 .vacio{text-align:center;color:var(--gr);font-size:13px;padding:14px 4px}
 .toast{position:fixed;top:calc(16px + var(--top));left:50%;transform:translateX(-50%) translateY(-120px);background:var(--am);color:#fff;font:700 14px Rubik;padding:10px 18px;border-radius:12px;transition:.3s;z-index:30;max-width:90%;text-align:center}
 .toast.on{transform:translateX(-50%) translateY(0)}
+.atajos{display:flex;gap:8px;margin-bottom:14px}
+.atajos button{flex:1;background:var(--ca2);border:1px solid var(--li);color:#fff;border-radius:12px;padding:10px 6px;font:600 13px Rubik;display:flex;align-items:center;justify-content:center;gap:6px}
+.atajos svg{width:18px;height:18px;stroke:var(--am);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.prev{max-height:44vh;overflow:auto;margin:10px 0;border-radius:12px;background:var(--ca2);padding:0 12px}
+.prev .item{padding:10px 0}
+.prev .item.fuera{opacity:.35}
+.chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--am);flex:none;display:grid;place-items:center;font-size:14px;font-weight:700}
+.chk.on{background:var(--am)}
+.mini2{font-size:11px;color:var(--gr)}
+.estado{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:6px}
+.estado.ok{background:var(--ok)}.estado.mal{background:var(--mal)}
+.copiable{background:var(--ca2);border-radius:10px;padding:10px;font:500 12px monospace;word-break:break-all;margin:6px 0;-webkit-user-select:all;user-select:all}
+.autoTag{font-size:10px;font-weight:700;color:var(--am);border:1px solid var(--am);border-radius:6px;padding:0 4px;margin-left:4px}
 /* pantalla de bloqueo */
 .puntos{display:flex;gap:14px;margin:6px 0 4px}
 .puntos i{width:14px;height:14px;border-radius:50%;border:2px solid var(--am)}
@@ -162,6 +175,8 @@ body.bloq #lock{display:flex}
 
   <main>
   <section class="vista on" id="v-inicio">
+    <div id="guardAviso"></div>
+    <div id="autoAviso"></div>
     <div id="ejemploAviso"></div>
     <div class="card hero">
       <div class="lbl" id="hLbl">Te queda para gastar este mes</div>
@@ -222,6 +237,8 @@ body.bloq #lock{display:flex}
     <h2 class="t">Personalizar</h2>
     <h3 class="t">Seguridad</h3>
     <div class="card" id="aSeg"></div>
+    <h3 class="t">Automático</h3>
+    <div class="card" id="aCon"></div>
     <h3 class="t">Plataformas <a href="#" onclick="nuevo('plat');return false">+ Agregar</a></h3>
     <div class="card" id="aPlat"></div>
     <h3 class="t">Categorías de gastos <a href="#" onclick="nuevo('catg');return false">+ Agregar</a></h3>
@@ -230,6 +247,7 @@ body.bloq #lock{display:flex}
     <div class="card" id="aCati"></div>
     <h3 class="t">Tus datos</h3>
     <div class="card">
+      <div class="sw"><div><b>Guardado</b><span id="aGuard">Todavía sin guardar</span></div></div>
       <div class="sw"><div><b>Tu nombre</b><span id="aNom"></span></div><button class="btns" onclick="editNombre()">Cambiar</button></div>
       <div class="sw"><div><b>Copia de seguridad</b><span>Copiá el texto y guardalo (WhatsApp a vos mismo, Drive, mail)</span></div><button class="btns" onclick="respaldo()">Copiar</button></div>
       <div class="sw"><div><b>Restaurar copia</b><span>Pegá el texto de una copia anterior</span></div><button class="btns" onclick="restaurar()">Pegar</button></div>
@@ -253,6 +271,10 @@ body.bloq #lock{display:flex}
   <div class="velo" id="velo" onclick="if(event.target===this)cerrar('velo')">
     <form class="hoja" onsubmit="guardarMov(event)">
       <div class="tira"></div>
+      <div class="atajos">
+        <button type="button" onclick="cerrar('velo');abrirPegar()"><svg viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 12h6M9 16h4"/></svg>Pegar aviso</button>
+        <button type="button" onclick="cerrar('velo');abrirImportar()"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3 3 3-3"/></svg>Importar resumen</button>
+      </div>
       <div class="tipo"><button type="button" class="on" id="tGas" onclick="setTipo('gasto')">Gasto</button><button type="button" id="tIng" onclick="setTipo('ingreso')">Ingreso</button></div>
       <input class="inmonto" id="fMonto" inputmode="decimal" placeholder="$0" autocomplete="off">
       <label>Categoría</label>
@@ -276,7 +298,11 @@ body.bloq #lock{display:flex}
   <div class="toast" id="toast"></div>
 </div>
 
-<script>(()=>{var i="bmk-finanzas-datos",c="bmk-finanzas-llave",t=/iPhone|iPad|iPod/.test(navigator.userAgent)||navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1,s=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===!0,r=!!(window.PublicKeyCredential&&navigator.credentials&&window.isSecureContext&&/^https?:$/.test(location.protocol)),d=a=>btoa(String.fromCharCode(...new Uint8Array(a))),u=a=>Uint8Array.from(atob(a),e=>e.charCodeAt(0)),o=a=>crypto.getRandomValues(new Uint8Array(a));async function n(){let a=await navigator.credentials.create({publicKey:{challenge:o(32),rp:{name:"BMK Finanzas"},user:{id:o(16),name:"bmk-finanzas",displayName:"BMK Finanzas"},pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"required",residentKey:"preferred"},timeout:6e4}});localStorage.setItem(c,d(a.rawId))}window.BMK={bloqueo:r,auto:!1,nombreBio:t?"Face ID":"tu huella o tu cara",notaSeguridad:r?'La primera vez te pide guardar una "llave de acceso": aceptala, es la que se abre con tu cara. Si falla, entr\xE1s con el c\xF3digo del celu o con el PIN de la app.':"Abierta como archivo, la app se protege con el PIN. Para Face ID o huella hay que publicarla en internet (https).",instalada:s,esIOS:t,async leer(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch{}let a=localStorage.getItem(i);return a?JSON.parse(a):null},async guardar(a){localStorage.setItem(i,JSON.stringify(a))},async biometria(){if(!r)return{disponible:!1,celuProtegido:!1,tipos:[]};let a=!1;try{a=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()}catch{}return this.bloqueo=a,{disponible:a,celuProtegido:a,tipos:a?[t?"Face ID":"huella o cara"]:[]}},async desbloquear(){let a=localStorage.getItem(c);if(!a){await n();return}try{await navigator.credentials.get({publicKey:{challenge:o(32),allowCredentials:[{type:"public-key",id:u(a)}],userVerification:"required",timeout:6e4}})}catch(e){if(e&&e.name==="NotAllowedError"&&g()){await n();return}throw e}},alCambiarEstado(a){document.addEventListener("visibilitychange",()=>a(document.visibilityState==="visible"))},salir(){}};var l=0;function g(){return l++,l>=3}"serviceWorker"in navigator&&location.protocol==="https:"&&!window.BMK_UN_ARCHIVO&&navigator.serviceWorker.register("sw.js").catch(()=>{});window.addEventListener("DOMContentLoaded",()=>{if(s||location.protocol!=="https:")return;let a=document.getElementById("v-inicio");if(!a)return;let e=document.createElement("div");e.className="aviso az",e.innerHTML=t?"<b>Instalala en tu iPhone:</b> en Safari toc\xE1 <b>Compartir</b> (el cuadrado con la flecha) \u2192 <b>Agregar a inicio</b>. Abrila siempre desde ese \xEDcono: ah\xED quedan guardados tus datos.":"<b>Instalala:</b> en el men\xFA del navegador toc\xE1 <b>Agregar a la pantalla de inicio</b> o <b>Instalar app</b>.",a.prepend(e)});})();
+<script>(()=>{var l="bmk-finanzas-datos",v="bmk-finanzas-llave",i=/iPhone|iPad|iPod/.test(navigator.userAgent)||navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1,d=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===!0,u=!!(window.PublicKeyCredential&&navigator.credentials&&window.isSecureContext&&/^https?:$/.test(location.protocol));function p(e,a){return new Promise((t,o)=>{let r=indexedDB.open("bmk-finanzas",1);r.onupgradeneeded=()=>r.result.createObjectStore("datos"),r.onerror=()=>o(r.error),r.onsuccess=()=>{let n=r.result.transaction("datos",e==="get"?"readonly":"readwrite").objectStore("datos"),s=e==="get"?n.get(l):n.put(a,l);s.onsuccess=()=>t(s.result||null),s.onerror=()=>o(s.error)}})}var h=e=>btoa(String.fromCharCode(...new Uint8Array(e))),y=e=>Uint8Array.from(atob(e),a=>a.charCodeAt(0)),g=e=>crypto.getRandomValues(new Uint8Array(e));async function b(){let e=await navigator.credentials.create({publicKey:{challenge:g(32),rp:{name:"BMK Finanzas"},user:{id:g(16),name:"bmk-finanzas",displayName:"BMK Finanzas"},pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"required",residentKey:"preferred"},timeout:6e4}});localStorage.setItem(v,h(e.rawId))}window.BMK={bloqueo:u,auto:!1,nombreBio:i?"Face ID":"tu huella o tu cara",notaSeguridad:u?'La primera vez te pide guardar una "llave de acceso": aceptala, es la que se abre con tu cara. Si falla, entr\xE1s con el c\xF3digo del celu o con el PIN de la app.':"Abierta como archivo, la app se protege con el PIN. Para Face ID o huella hay que publicarla en internet (https).",instalada:d,esIOS:i,async leer(){try{navigator.storage&&navigator.storage.persist&&await navigator.storage.persist()}catch{}let e=null,a=null;try{let t=localStorage.getItem(l);e=t?JSON.parse(t):null}catch{}try{a=await p("get")}catch{}return e&&a?(a._t||0)>(e._t||0)?a:e:e||a},async guardar(e){e._t=Date.now();let a=!1;try{localStorage.setItem(l,JSON.stringify(e)),a=!0}catch{}try{await p("put",e),a=!0}catch{}if(!a)throw new Error("no se pudo guardar")},async revisarGuardado(){let e=navigator.userAgent,a=/FBAN|FBAV|Instagram|WhatsApp|Line\/|GSA\/|Twitter|TikTok|musical_ly|Snapchat/i.test(e),t=!1;try{localStorage.setItem("bmk-prueba","1"),t=localStorage.getItem("bmk-prueba")==="1",localStorage.removeItem("bmk-prueba")}catch{}let o=null;try{navigator.storage&&navigator.storage.estimate&&(o=(await navigator.storage.estimate()).quota)}catch{}let r=o!==null&&o<130*1024*1024&&i===!1,c=null;try{c=navigator.storage&&navigator.storage.persisted?await navigator.storage.persisted():null}catch{}return{escribe:t,navegadorDeApp:a,privado:r,instalada:d,persistente:c}},async biometria(){if(!u)return{disponible:!1,celuProtegido:!1,tipos:[]};let e=!1;try{e=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()}catch{}return this.bloqueo=e,{disponible:e,celuProtegido:e,tipos:e?[i?"Face ID":"huella o cara"]:[]}},async desbloquear(){let e=localStorage.getItem(v);if(!e){await b();return}try{await navigator.credentials.get({publicKey:{challenge:g(32),allowCredentials:[{type:"public-key",id:y(e)}],userVerification:"required",timeout:6e4}})}catch(a){if(a&&a.name==="NotAllowedError"&&f()){await b();return}throw a}},alCambiarEstado(e){document.addEventListener("visibilitychange",()=>e(document.visibilityState==="visible"))},salir(){}};var m=0;function f(){return m++,m>=3}"serviceWorker"in navigator&&location.protocol==="https:"&&!window.BMK_UN_ARCHIVO&&navigator.serviceWorker.register("sw.js").catch(()=>{});window.addEventListener("DOMContentLoaded",()=>{if(d||location.protocol!=="https:")return;let e=document.getElementById("v-inicio");if(!e)return;let a=document.createElement("div");a.className="aviso az",a.innerHTML=i?"<b>Instalala en tu iPhone:</b> en Safari toc\xE1 <b>Compartir</b> (el cuadrado con la flecha) \u2192 <b>Agregar a inicio</b>. Abrila siempre desde ese \xEDcono: ah\xED quedan guardados tus datos.":"<b>Instalala:</b> en el men\xFA del navegador toc\xE1 <b>Agregar a la pantalla de inicio</b> o <b>Instalar app</b>.",e.prepend(a)});})();
+</script>
+<script>(()=>{var B=a=>String(a||"").normalize("NFD").replace(/[̀-ͯ]/g,""),m=a=>B(a).toLowerCase().replace(/\s+/g," ").trim();function b(a){if(a==null)return null;if(typeof a=="number")return isFinite(a)?a:null;let n=String(a).trim();if(!n)return null;let o=/^\(.*\)$/.test(n)||/^-|-\s*$|^\$\s*-|−/.test(n);if(n=n.replace(/[^\d.,]/g,"").replace(/[.,]+$/,""),!n||!/\d/.test(n))return null;let t=n.lastIndexOf("."),e=n.lastIndexOf(",");if(t>=0&&e>=0)e>t?n=n.replace(/\./g,"").replace(",","."):n=n.replace(/,/g,"");else if(e>=0)n=n.length-e-1===3&&(n.match(/,/g)||[]).length>=1&&!/^0,/.test(n)?n.replace(/,/g,""):n.replace(/\./g,"").replace(",",".");else if(t>=0){let i=n.split(".");(i.length>2||i[1]&&i[1].length===3&&i[0].length<=3)&&(n=n.replace(/\./g,""))}let r=parseFloat(n);return isFinite(r)?o?-r:r:null}var O=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];function x(a,n=new Date){let o=(r,i,s)=>(r<100&&(r+=2e3),i<1||i>12||s<1||s>31?null:r+"-"+String(i).padStart(2,"0")+"-"+String(s).padStart(2,"0"));if(a instanceof Date&&!isNaN(a))return o(a.getFullYear(),a.getMonth()+1,a.getDate());if(typeof a=="number"&&a>3e4&&a<8e4){let r=new Date(Math.round((a-25569)*864e5));return o(r.getUTCFullYear(),r.getUTCMonth()+1,r.getUTCDate())}let t=m(a),e=t.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);if(e)return o(+e[1],+e[2],+e[3]);if(e=t.match(/\b(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})\b/),e)return o(+e[3],+e[2],+e[1]);if(e=t.match(/\b(\d{1,2})\s*(?:de\s+)?(ene|feb|mar|abr|may|jun|jul|ago|sep|set|oct|nov|dic)[a-z]*\.?(?:\s*(?:de\s+)?(\d{4}))?/),e){let r=e[2]==="set"?9:O.indexOf(e[2])+1;return o(e[3]?+e[3]:n.getFullYear(),r,+e[1])}return e=t.match(/\b(\d{1,2})\/(\d{1,2})\b/),e?o(n.getFullYear(),+e[2],+e[1]):null}function j(...a){let n=a.map(e=>m(e)).join("|"),o=2166136261,t=5381;for(let e=0;e<n.length;e++){let r=n.charCodeAt(e);o=Math.imul(o^r,16777619),t=(t<<5)+t+r|0}return(o>>>0).toString(36)+(t>>>0).toString(36)}var k=[["Mercado Pago",/mercado ?pago|mercadopago|com\.mercadopago/],["Ual\xE1",/\buala\b|com\.uala|ar\.com\.uala/],["Brubank",/brubank/],["Naranja X",/naranja ?x|com\.naranjax|\bnaranja\b/],["Personal Pay",/personal ?pay/],["Lemon",/\blemon\b|lemoncash|com\.lemon/],["Belo",/\bbelo\b|com\.belo/],["Binance",/binance/],["Prex",/\bprex\b/],["Cuenta DNI",/cuenta ?dni/],["MODO",/\bmodo\b|com\.playdigital/],["Santander",/santander/],["Galicia",/galicia/],["Macro",/\bmacro\b/],["Naci\xF3n",/banco nacion|\bbna\b|bna\+|com\.bna/],["BBVA",/bbva|frances/],["ICBC",/icbc/],["HSBC",/hsbc/],["Credicoop",/credicoop/],["Banco Ciudad",/banco ciudad|bancociudad/],["Banco Provincia",/banco provincia|bapro/],["Supervielle",/supervielle/],["Patagonia",/patagonia/],["Hipotecario",/hipotecario/],["Banco de Santa Fe",/santa ?fe|bancosantafe|bsf/],["Municipal de Rosario",/municipal|bmros/],["Banco del Sol",/banco del sol|bancodelsol/],["Openbank",/openbank/]];function $(a,n){let o=m((n||"")+" "+a);for(let[t,e]of k)if(e.test(o))return t;return null}var N={comida:"coto|carrefour|\\bdia\\b|supermercado|super |la anonima|jumbo|disco|vea|chango|walmart|libertad|verduleria|carniceria|almacen|panaderia|pedidosya|pedidos ya|rappi|mcdonald|burger|mostaza|pizz|empanad|cafe|starbucks|havanna|kiosco|despensa|mayorista|maxiconsumo|vital|makro|helader|grido|resto|restaurant|parrilla|sushi",moto:"ypf|shell|axion|puma|gulf|nafta|combustible|estacion de servicio|lubricentro|gomeria|repuesto|moto|taller|patente|seguro moto|vtv|estacionamiento|peaje",casa:"alquiler|expensas|ferreteria|easy|sodimac|blaisten|mueble|hogar|inmobiliaria",servicios:"epe|litoral gas|aguas santafesinas|aguas|edenor|edesur|metrogas|personal|claro|movistar|telecentro|fibertel|flow|directv|internet|telefono|netflix|spotify|disney|hbo|max\\b|prime video|amazon prime|youtube|google one|icloud|apple\\.com|chatgpt|openai|claude|anthropic|microsoft|adobe|canva|suscripcion|tuenti",salidas:"cine|hoyts|showcase|cinemark|teatro|recital|ticket|entrada|bar |cerveceria|boliche|uber|didi|cabify|taxi|remis|sube|colectivo|movi|tienda de juegos|steam|playstation|xbox",salud:"farmacia|farmacity|medic|osde|swiss medical|galeno|obra social|prepaga|clinica|sanatorio|odontolog|optica|laboratorio|gimnasio|gym",compras:"mercado libre|mercadolibre|meli|fr\xE1vega|fravega|garbarino|musimundo|zara|adidas|nike|shein|temu|aliexpress|tienda|shopping|falabella|dexter|grimoldi|indumentaria|electro",impuestos:"afip|arca|monotributo|api santa fe|\\bapi\\b|arba|agip|impuesto|tasa|municipalidad|ganancias|bienes personales|iibb|ingresos brutos|rentas"},P={sueldo:"sueldo|haberes|acreditacion de haberes|remuneracion|salario|aguinaldo|honorarios"};function F(a,n,o){let t=m(a),e=n==="ingreso"?P:N;for(let[r,i]of Object.entries(e))if(!(o&&!o.includes(r))&&new RegExp(i).test(t))return r;if(o&&o.nombres){for(let[r,i]of o.nombres)if(i.length>2&&t.includes(m(i)))return r}return n==="ingreso"&&o&&o.includes("extra")?"extra":"otros"}var I=/recibiste|te (?:transfirieron|enviaron|depositaron|pagaron|acreditamos|devolvimos|reintegramos)|ingres[oó] (?:dinero|plata|un pago)|ingreso de dinero|acreditamos|se acredit|cobraste|cobro recibido|recibimos tu deposito|deposito recibido|reintegro|devolucion|rendimiento|rendimientos|intereses ganados|te llego|llego plata|transferencia recibida|recibiste un pago|vendiste/,L=/pagaste|compraste|transferiste|enviaste|enviamos|realizaste|compra|consumo|debit|extrajiste|extraccion|retiraste|pago (?:de|a|en|realizado|aprobado)|te cobramos|cobramos|suscripcion|cargo|transferencia (?:enviada|realizada)|retiro/,X=/codigo de (?:verificacion|seguridad)|tu clave|token|inicio de sesion|iniciaste sesion|promo|descuento de hasta|cuotas sin interes|te regalamos|ganaste un cupon|resumen disponible|vence (?:hoy|el)|vencimiento|rechazad|no pudimos|cancelad|fallo/;function R(a,n={}){let o=String(a||"").replace(/\s+/g," ").trim();if(!o)return null;let t=m(o),e=/(u\$s|us\$|usd|usdt|ars|\$)\s*(-?\s*[\d][\d.,]*)|(-?[\d][\d.,]*)\s*(usdt|usd|u\$s|ars|pesos|dolares)/i,r=o.match(e);if(!r)return null;let i=r[2]||r[3],s=b(i);if(!s||Math.abs(s)<.01)return null;let c=m(r[1]||r[4]||""),d=c==="usdt"?"USDT":/u\$s|us\$|usd|dolar/.test(c)?"USD":"ARS",p=X.test(t)&&!/(pagaste|recibiste|transferiste|compraste)/.test(t),u=null,f=t.search(I),g=t.search(L);f>=0&&(g<0||f<g)?u="ingreso":g>=0&&(u="gasto"),s<0&&(u=u||"gasto",s=-s),u||(u=n.tipoPorDefecto||"gasto");let l="",h=o.slice(o.indexOf(r[0])+r[0].length),E=o.slice(0,o.indexOf(r[0])),S=/(?:^|\s)(?:en|a|de|para|desde)\s+([A-Za-zÁÉÍÓÚÑáéíóúñ0-9*][\wÁÉÍÓÚÑáéíóúñ.&'*\/ -]{1,45}?)(?=\s+(?:con|por|el dia|el|desde|ya|via|mediante|usando|hoy|desde tu)\b|[,;!\n]|\.(?=\s|$)|$)/i,y=h.match(S)||E.match(S);y&&(l=y[1].trim()),l=l.replace(/\b(tu|tus|su|la|el|los|las)\s+(cuenta|tarjeta|dinero).*$/i,"").replace(/\s+\d{2}\/\d{2}.*$/,"").replace(/\*+/g," ").replace(/\s+/g," ").trim(),/^(tu|la|el|un|una|cuenta|tarjeta|dinero|mercado pago|tu cuenta)$/i.test(l)&&(l=""),l.length>40&&(l=l.slice(0,40));let z=$(o,n.paquete),A=x(o)||n.hoy||null;return{tipo:u,monto:Math.round(s*100)/100,moneda:d,comercio:l,origen:z,fecha:A,rechazado:p,texto:o}}function D(a){let n=String(a||"").split(/\n\s*\n+/).map(t=>t.trim()).filter(Boolean),o=[];for(let t of n){let e=t.split(`
+`).map(s=>s.trim()).filter(Boolean),r=e.filter(s=>/(\$|usd|u\$s|usdt|ars)\s*-?\d/i.test(s)),i="";for(;e.length&&!/(\$|usd|u\$s|usdt|ars)\s*-?\d/i.test(e[0])&&r.length>1;)i+=(i?" ":"")+e.shift();if(r.length>1){let s="";for(let c of e)s+=(s?" ":"")+c,/(\$|usd|u\$s|usdt|ars)\s*-?\d/i.test(c)&&(o.push((i?i+": ":"")+s),s="");s&&o.length&&(o[o.length-1]+=" "+s)}else o.push(e.join(" "))}return o}var G={fecha:/^(fecha|date|fecha de (operacion|origen|movimiento|transaccion|aprobacion|liberacion)|fecha operacion|f\. ?operacion|dia)/,detalle:/(descripcion|concepto|detalle|referencia|movimiento|description|tipo de operacion|operacion|comercio|establecimiento|leyenda)/,monto:/^(importe|monto|valor|amount|monto neto|monto bruto|importe en pesos|importe \$|monto \(\$\)|net_credit_amount|total)/,debito:/(debito|egreso|salida|cargo|debe|retiro)/,credito:/(credito|ingreso|entrada|abono|haber|deposito)/,saldo:/^(saldo|balance|saldo disponible|saldo final|saldo \$)/};function M(a){let n=null;for(let o=0;o<Math.min(a.length,25);o++){let t=(a[o]||[]).map(i=>m(i)),e={};t.forEach((i,s)=>{if(!(!i||i.length>40)){for(let[c,d]of Object.entries(G))if(e[c]===void 0&&d.test(i)){e[c]=s;break}}});let r=Object.keys(e).length+(e.fecha!==void 0?1:0)+(e.monto!==void 0||e.debito!==void 0?1:0);e.fecha!==void 0&&(e.monto!==void 0||e.debito!==void 0||e.credito!==void 0)&&(!n||r>n.puntos)&&(n={fila:o,col:e,puntos:r})}if(n)return n;for(let o=0;o<Math.min(a.length,10);o++){let t=a[o]||[],e=t.findIndex(i=>x(i)&&String(i).length<=25),r=t.map((i,s)=>[s,typeof i=="number"||/^-?\$?\s*[\d.,]+$/.test(String(i).trim())?b(i):null]).filter(([i,s])=>s!==null&&i!==e);if(e>=0&&r.length){let i=t.findIndex((s,c)=>c!==e&&typeof s=="string"&&/[a-z]{3}/i.test(s));return{fila:o-1,col:{fecha:e,monto:r[0][0],detalle:i>=0?i:void 0,saldo:r.length>1?r[r.length-1][0]:void 0},puntos:1,sinEncabezado:!0}}}return null}function U(a,n=new Date){let o=M(a);if(!o)return{error:"No encontr\xE9 las columnas de fecha y monto en el archivo."};let{col:t}=o,e=[],r=null,i=null;for(let c=o.fila+1;c<a.length;c++){let d=a[c]||[],p=x(d[t.fecha],n);if(!p)continue;let u=null,f=null;if(t.debito!==void 0||t.credito!==void 0){let l=t.debito!==void 0?b(d[t.debito]):null,h=t.credito!==void 0?b(d[t.credito]):null;l&&Math.abs(l)>0?(u=Math.abs(l),f="gasto"):h&&Math.abs(h)>0&&(u=Math.abs(h),f="ingreso")}if(u===null&&t.monto!==void 0){let l=b(d[t.monto]);l&&(u=Math.abs(l),f=l<0?"gasto":"ingreso")}if(!u)continue;let g=t.detalle!==void 0?String(d[t.detalle]||"").replace(/\s+/g," ").trim():"";if(t.debito===void 0&&t.credito===void 0&&f==="ingreso"&&d[t.monto]!==void 0&&!/-/.test(String(d[t.monto]))&&/^(pago|compra|consumo|debito|transferencia enviada|extraccion)/.test(m(g))&&typeof d[t.monto]!="number"&&(f="gasto"),t.saldo!==void 0){let l=b(d[t.saldo]);l!==null&&(!i||p>=i)&&(r=l,i=p)}e.push({fecha:p,tipo:f,monto:Math.round(u*100)/100,detalle:g.slice(0,60)||(f==="gasto"?"Gasto":"Ingreso"),clave:j(p,f,u.toFixed(2),g)})}let s={};for(let c of e)s[c.clave]=(s[c.clave]||0)+1,s[c.clave]>1&&(c.clave+="~"+s[c.clave]);return{movs:e,ultimoSaldo:r,fechaSaldo:i,columnas:t,sinEncabezado:!!o.sinEncabezado}}function C(a){let n=String(a).replace(/^﻿/,"").split(/\r?\n/),o=n.slice(0,10).join(`
+`),t=[";",",","	","|"].map(e=>[e,(o.match(new RegExp("\\"+e,"g"))||[]).length]).sort((e,r)=>r[1]-e[1])[0][0];return n.filter(e=>e.trim()).map(e=>{let r=[],i="",s=!1;for(let c=0;c<e.length;c++){let d=e[c];d==='"'?s&&e[c+1]==='"'?(i+='"',c++):s=!s:d===t&&!s?(r.push(i),i=""):i+=d}return r.push(i),r.map(c=>c.trim())})}async function w(a,n,o={}){if(!a||!a.url)throw new Error("Falta configurar el servidor");let t=await fetch(a.url.replace(/\/$/,"")+n,{...o,headers:{"content-type":"application/json","x-clave":a.clave||"",...o.headers||{}}}),e=await t.json().catch(()=>({}));if(!t.ok||e.error)throw new Error(e.error||"Error "+t.status);return e}var _={probar:a=>w(a,"/ping"),binance:(a,n,o)=>w(a,"/binance",{method:"POST",body:JSON.stringify({key:n,secret:o})}),traerAvisos:(a,n)=>w(a,"/avisos?u="+encodeURIComponent(n)),async dolar(){let a=await fetch("https://dolarapi.com/v1/dolares");if(!a.ok)throw new Error("dolarapi "+a.status);let n=await a.json(),o={};for(let t of n)o[t.casa]={compra:t.compra,venta:t.venta,fecha:t.fechaActualizacion};return o}},v=null;function T(){return window.XLSX?Promise.resolve(window.XLSX):(v||(v=new Promise((a,n)=>{let o=document.createElement("script");o.src="xlsx.js",o.onload=()=>a(window.XLSX),o.onerror=()=>{v=null,n(new Error("No se pudo cargar el lector de Excel (\xBFsin internet?)"))},document.head.appendChild(o)})),v)}async function q(a){let n=(a.name||"").toLowerCase();if(/\.(csv|txt|tsv)$/.test(n))return C(await a.text());if(/\.pdf$/.test(n))throw new Error("Los PDF no se pueden leer. Baj\xE1 el resumen en Excel o CSV desde la web o la app del banco.");let o=await T(),t=o.read(await a.arrayBuffer(),{type:"array",cellDates:!0}),e=[];for(let r of t.SheetNames){let i=o.utils.sheet_to_json(t.Sheets[r],{header:1,raw:!0,defval:""});i.length>e.length&&(e=i)}return e}typeof window<"u"&&(window.BMKAuto={leerMonto:b,leerFecha:x,huella:j,detectarOrigen:$,adivinarCategoria:F,interpretarAviso:R,separarAvisos:D,detectarColumnas:M,leerResumen:U,leerCSV:C,leerArchivo:q,conexiones:_,norm:m});})();
 </script>
 <script>
 // ---------- íconos ----------
@@ -354,13 +380,15 @@ const esHoyMes=()=>cur===mesDe(iso(hoyD()));
 
 // ---------- guardar ----------
 let tGuardar;
-function guardar(){window.BMK.guardar(D).catch(()=>toast('No se pudo guardar'))}
+let ultimoGuardado=0;
+function guardar(){return Promise.resolve(window.BMK.guardar(D)).then(()=>{ultimoGuardado=Date.now();const e=$('aGuard');if(e)e.textContent=textoGuardado()}).catch(()=>toast('No se pudo guardar en este celu'))}
+const textoGuardado=()=>ultimoGuardado?'Guardado en este celu a las '+new Date(ultimoGuardado).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})+' ✓':'Todavía sin guardar';
 function cambio(){render();guardar()}
 
 // ---------- render ----------
 function filaMov(m){
  const s=m.t==='ingreso',p=m.p&&plat(m.p);
- return `<div class="item tap" onclick="verMov('${m.id}')">${p?badge(p):`<div class="ico">${icoCat(m.t,m.c)}</div>`}<div class="d"><b>${esc(m.det)}</b><span>${p?esc(p.n)+' · ':''}${esc(nomCat(m.t,m.c))} · ${nomBil(m.b)}</span></div><div class="monto ${s?'mas':''}">${s?'+':'−'}${f(m.m)}</div></div>`;
+ return `<div class="item tap" onclick="verMov('${m.id}')">${p?badge(p):`<div class="ico">${icoCat(m.t,m.c)}</div>`}<div class="d"><b>${esc(m.det)}${m.auto?'<span class="autoTag">AUTO</span>':''}${m.imp?'<span class="autoTag">IMPORT.</span>':''}</b><span>${p?esc(p.n)+' · ':''}${esc(nomCat(m.t,m.c))} · ${nomBil(m.b)}</span></div><div class="monto ${s?'mas':''}">${s?'+':'−'}${f(m.m)}</div></div>`;
 }
 function filaVenc(v,boton){
  const pag=v.pag&&v.pag[cur];const dh=hoyD().getDate();const falta=v.dia-dh;
@@ -426,6 +454,9 @@ function render(){
  $('aCatg').innerHTML=Object.entries(D.catg).map(([k,c])=>`<div class="item tap" onclick="editCat('g','${k}')"><div class="ico">${svg(c.ico)}</div><div class="d"><b>${esc(c.n)}</b><span>${c.tope?'Tope '+f(c.tope):'Sin tope'}</span></div><span class="nota" style="margin:0">Editar</span></div>`).join('');
  $('aCati').innerHTML=Object.entries(D.cati).map(([k,c])=>`<div class="item tap" onclick="editCat('i','${k}')"><div class="ico">${svg(c.ico)}</div><div class="d"><b>${esc(c.n)}</b><span>Ingreso</span></div><span class="nota" style="margin:0">Editar</span></div>`).join('');
  $('aNom').textContent=D.nombre||'—';
+ $('aGuard').textContent=textoGuardado();
+ renderCon();
+ pintarRecientes();
  renderForm();
 }
 function renderForm(){
@@ -470,7 +501,7 @@ function verMov(id){const m=D.mov.find(x=>x.id===id);if(!m)return;const p=m.p&&p
   </div>
   <button type="button" class="btnr" onclick="borrarMov('${m.id}')">Borrar movimiento</button>`,null)}
 function borrarMov(id){const m=D.mov.find(x=>x.id===id);if(!m)return;
- confirmar('¿Borrar este movimiento? El saldo de la billetera se corrige solo.',()=>{const b=D.bil.find(x=>x.id===m.b);if(b)b.m-=(m.t==='ingreso'?m.m:-m.m)/(b.usd?D.cfg.dolar:1);D.mov=D.mov.filter(x=>x.id!==id);cerrar('velo2');cambio();toast('Movimiento borrado')})}
+ confirmar(m.imp?'¿Borrar este movimiento importado?':'¿Borrar este movimiento? El saldo de la billetera se corrige solo.',()=>{const b=!m.imp&&D.bil.find(x=>x.id===m.b);if(b)b.m-=(m.t==='ingreso'?m.m:-m.m)/(b.usd?D.cfg.dolar:1);D.mov=D.mov.filter(x=>x.id!==id);cerrar('velo2');cambio();toast('Movimiento borrado')})}
 
 // ---------- hoja genérica ----------
 function hoja(html,fn,boton){hojaFn=fn;$('hoja2').innerHTML='<div class="tira"></div>'+html+(fn?`<div style="height:16px"></div><button class="btnp">${boton||'Guardar'}</button>`:'');$('velo2').classList.add('on');const i=$('hoja2').querySelector('input');if(i&&fn)setTimeout(()=>i.focus(),150)}
@@ -581,6 +612,7 @@ async function pedirDesbloqueo(tap){
 }
 function bloquear(){if(hayBloqueo()){document.body.classList.add('bloq');desbloqueado=false;cerrar('velo');cerrar('velo2');pantallaBloqueo()}}
 $('lockBtn').onclick=()=>pedirDesbloqueo(true);
+window.addEventListener('pagehide',()=>{try{window.BMK.guardar(D)}catch(e){}});
 const SVG_CARA='<svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1"/><path d="M9 16c1.6 1.3 4.4 1.3 6 0"/></svg>';
 function iconoBloqueo(){
  // iPhone: siempre Face ID. Android: cara si el celu solo tiene cara; si no, huella.
@@ -588,17 +620,206 @@ function iconoBloqueo(){
  if(cara)$('lockBtn').innerHTML=SVG_CARA;
 }
 
+
+// ================= AUTOMÁTICO =================
+const A=()=>window.BMKAuto;
+const claves={leer(){try{return JSON.parse(localStorage.getItem('bmk-claves')||'{}')}catch(e){return{}}},guardar(o){try{localStorage.setItem('bmk-claves',JSON.stringify(o))}catch(e){}}};
+const yaVisto=k=>D.auto.claves.includes(k);
+const marcar=k=>{D.auto.claves.push(k);if(D.auto.claves.length>6000)D.auto.claves=D.auto.claves.slice(-5000)};
+function bilPara(origen){
+ if(origen){const o=A().norm(origen);const b=D.bil.find(b=>{const n=A().norm(b.n);return n.includes(o)||o.includes(n)});if(b)return b}
+ return D.bil.find(b=>b.id===D.auto.bilDefecto)||D.bil.find(b=>!b.usd)||D.bil[0];
+}
+function catIds(tipo){const c=cats(tipo);const ids=Object.keys(c);ids.nombres=Object.entries(c).map(([k,v])=>[k,v.n]);return ids}
+function platPara(texto){const t=A().norm(texto);const p=D.plat.find(p=>t.includes(A().norm(p.n))||t.includes(A().norm(p.n).replace(/\s/g,'')));return p?p.id:undefined}
+// convierte un aviso leído en un movimiento listo para guardar
+function avisoAMov(a,extra={}){
+ const bil=extra.b?D.bil.find(b=>b.id===extra.b):bilPara(a.origen);
+ const enPesos=(a.moneda==='ARS')?a.monto:a.monto*D.cfg.dolar;
+ const det=(a.comercio||(a.origen?a.origen:'')||(a.tipo==='gasto'?'Gasto':'Ingreso')).replace(/^\w/,c=>c.toUpperCase());
+ const conOrigen=a.origen&&bil&&!A().norm(bil.n).includes(A().norm(a.origen))?det+' ('+a.origen+')':det;
+ return {id:uid(),t:a.tipo,c:A().adivinarCategoria(a.comercio+' '+a.texto,a.tipo,catIds(a.tipo)),det:conOrigen,b:bil?bil.id:'',m:Math.round(enPesos*100)/100,f:a.fecha||iso(hoyD()),p:platPara(a.texto),auto:true,clave:A().huella(a.fecha||iso(hoyD()),a.tipo,a.monto,a.comercio)};
+}
+function aplicarMov(m,mueveSaldo=true){
+ D.mov.push(m);marcar(m.clave);
+ if(mueveSaldo){const b=D.bil.find(x=>x.id===m.b);if(b)b.m+=(m.t==='ingreso'?m.m:-m.m)/(b.usd?D.cfg.dolar:1)}
+}
+const filaPrev=(m,i,fuera,extra='')=>`<div class="item tap ${fuera?'fuera':''}" onclick="togPrev(${i})"><div class="chk ${fuera?'':'on'}">${fuera?'':'✓'}</div><div class="d"><b>${esc(m.det)}</b><span>${esc(nomCat(m.t,m.c))} · ${nomBil(m.b)} · ${m.f.split('-').reverse().slice(0,2).join('/')}${extra}</span></div><div class="monto ${m.t==='ingreso'?'mas':''}">${m.t==='ingreso'?'+':'−'}${f(m.m)}</div></div>`;
+let prev=[],prevFuera=[],prevModo='';
+function togPrev(i){prevFuera[i]=!prevFuera[i];pintarPrev()}
+
+// ---- pegar aviso ----
+function abrirPegar(){
+ hoja(`<h3 class="t" style="margin-top:0">Pegar aviso</h3>
+ <div class="nota" style="margin-bottom:8px">Copiá la notificación, el mail o el SMS del pago y pegalo acá. Podés pegar varios juntos.</div>
+ <textarea id="pTxt" placeholder="Ej: Pagaste $ 2.500 en COTO"></textarea>
+ <button type="button" class="btns" style="width:100%;margin-top:8px;padding:12px" id="pPegar">Pegar del portapapeles</button>
+ <div id="pRes"></div>`,()=>{confirmarPrev();return true},'Anotar');
+ $('pTxt').oninput=()=>leerPegado();
+ $('pPegar').onclick=async()=>{try{$('pTxt').value=await navigator.clipboard.readText();leerPegado()}catch(e){toast('Mantené apretado el cuadro y tocá Pegar')}};
+}
+function leerPegado(){
+ const txt=$('pTxt').value;prevModo='pegar';prev=[];prevFuera=[];
+ const partes=A().separarAvisos(txt);let raros=0;
+ for(const p of partes){const a=A().interpretarAviso(p,{hoy:iso(hoyD())});if(!a||a.rechazado){raros++;continue}const m=avisoAMov(a);m.auto=false;m.pegado=true;prev.push(m);prevFuera.push(yaVisto(m.clave))}
+ pintarPrev(raros);
+}
+function pintarPrev(raros){
+ const el=$('pRes')||$('iRes');if(!el)return;
+ if(prevModo==='importar'){pintarImport();return}
+ if(!prev.length){el.innerHTML=$('pTxt').value.trim()?'<div class="aviso" style="margin-top:10px">No encontré ningún monto. Fijate que el texto tenga el importe con $.</div>':'';return}
+ el.innerHTML=`<div class="prev">${prev.map((m,i)=>filaPrev(m,i,prevFuera[i],prevFuera[i]&&yaVisto(m.clave)?' · <b>ya estaba</b>':'')).join('')}</div>
+ <div class="nota">Tocá un movimiento para sacarlo. La categoría y la billetera las adivina la app: si alguna está mal, la cambiás después desde el Talonario.</div>
+ <label>Anotar todo en la billetera</label><select id="pBil"><option value="">La que detecte la app</option>${D.bil.map(b=>`<option value="${b.id}">${esc(b.n)}</option>`).join('')}</select>`;
+ $('pBil').onchange=()=>{const v=$('pBil').value;prev.forEach(m=>{if(v)m.b=v});pintarPrev()};
+}
+function confirmarPrev(){
+ let n=0;prev.forEach((m,i)=>{if(prevFuera[i])return;aplicarMov(m,prevModo!=='importar');n++});
+ if(prevModo==='importar'&&$('iSaldo')&&$('iSaldo').classList.contains('on')&&impSaldo!==null){const b=D.bil.find(x=>x.id===impBil);if(b){b.m=b.usd?impSaldo/D.cfg.dolar:impSaldo}}
+ prev=[];cambio();toast(n?`Se anotaron ${n} movimiento${n>1?'s':''}`:'No se anotó nada');
+}
+// ---- importar resumen ----
+let impSaldo=null,impBil='',impRes=null;
+function abrirImportar(){
+ prevModo='importar';prev=[];impRes=null;
+ hoja(`<h3 class="t" style="margin-top:0">Importar resumen</h3>
+ <div class="nota" style="margin-bottom:8px">Bajá los movimientos en <b>Excel o CSV</b> desde la web o la app del banco o de Mercado Pago (en Mercado Pago: Tu actividad → Descargar). Los PDF no se pueden leer.</div>
+ <label>¿De qué billetera es?</label><select id="iBil">${D.bil.map(b=>`<option value="${b.id}">${esc(b.n)}</option>`).join('')}</select>
+ <label>Archivo</label><input type="file" id="iArch" class="txt" accept=".xlsx,.xls,.csv,.txt,.ods">
+ <div id="iRes"></div>`,()=>{if(!prev.length){toast('Elegí un archivo primero');return false}confirmarPrev();return true},'Importar');
+ $('iBil').onchange=()=>{impBil=$('iBil').value;if(impRes)armarImport()};
+ impBil=$('iBil').value;
+ $('iArch').onchange=async()=>{const fl=$('iArch').files[0];if(!fl)return;$('iRes').innerHTML='<div class="vacio">Leyendo…</div>';
+  try{const filas=await A().leerArchivo(fl);impRes=A().leerResumen(filas,hoyD());if(impRes.error)throw new Error(impRes.error);armarImport()}
+  catch(e){$('iRes').innerHTML=`<div class="aviso" style="margin-top:10px">${esc(e.message)}</div>`}};
+}
+function armarImport(){
+ impBil=$('iBil').value;prev=[];prevFuera=[];
+ for(const x of impRes.movs){const clave='imp:'+impBil+':'+x.clave;const m={id:uid(),t:x.tipo,c:A().adivinarCategoria(x.detalle,x.tipo,catIds(x.tipo)),det:x.detalle,b:impBil,m:x.monto,f:x.fecha,p:platPara(x.detalle),imp:true,clave};prev.push(m);prevFuera.push(yaVisto(clave))}
+ impSaldo=impRes.ultimoSaldo;pintarImport();
+}
+function pintarImport(){
+ const nuevos=prev.filter((m,i)=>!prevFuera[i]),rep=prev.filter(m=>yaVisto(m.clave)).length;
+ const g=nuevos.filter(m=>m.t==='gasto').reduce((s,m)=>s+m.m,0),i2=nuevos.filter(m=>m.t==='ingreso').reduce((s,m)=>s+m.m,0);
+ const b=D.bil.find(x=>x.id===impBil);
+ $('iRes').innerHTML=`<div class="card" style="background:var(--ca2);margin-top:12px">
+  <b>${prev.length} movimientos encontrados</b><div class="nota">${nuevos.length} para importar${rep?` · ${rep} ya estaban (no se repiten)`:''}<br>Ingresos ${f(i2)} · Gastos ${f(g)}</div></div>
+  ${impSaldo!==null?`<div class="sw"><div><b>Poner el saldo de ${esc(b?b.n:'')} en ${f(impSaldo)}</b><span>Es el último saldo del resumen (${(impRes.fechaSaldo||'').split('-').reverse().join('/')})</span></div><button type="button" class="tog on" id="iSaldo" onclick="this.classList.toggle('on')"></button></div>`:'<div class="nota">El archivo no trae saldo: los movimientos se suman al historial pero no cambian el saldo de la billetera.</div>'}
+  <div class="prev">${prev.slice(0,200).map((m,i)=>filaPrev(m,i,prevFuera[i],yaVisto(m.clave)?' · <b>ya estaba</b>':'')).join('')}</div>
+  ${prev.length>200?`<div class="nota">Se muestran 200 de ${prev.length}; se importan todos.</div>`:''}`;
+}
+
+// ---- Personalizar → Automático ----
+function renderCon(){
+ const el=$('aCon');if(!el)return;const au=D.auto,k=claves.leer();
+ const hora=t=>t?new Date(t).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'nunca';
+ const srvOk=!!(au.srv.url&&au.srv.clave);
+ el.innerHTML=`
+ <div class="sw"><div><b>Dólar automático</b><span>${au.dolarAuto?`${({oficial:'Oficial',blue:'Blue',bolsa:'MEP',cripto:'Cripto'})[au.casa]} a ${f(D.cfg.dolar)} · actualizado ${hora(au.ultDolar)}`:'Apagado: lo cargás a mano en Billeteras'}</span></div><button class="tog ${au.dolarAuto?'on':''}" onclick="D.auto.dolarAuto=!D.auto.dolarAuto;D.auto.ultDolar=0;cambio();automatizar()"></button></div>
+ ${au.dolarAuto?pickSeg('casaSel',[['oficial','Oficial'],['blue','Blue'],['bolsa','MEP'],['cripto','Cripto']],au.casa).replace(/onclick="casaSel='(\w+)';/g,"onclick=\"D.auto.casa='$1';D.auto.ultDolar=0;guardar();automatizar();"):''}
+ <div class="sw" style="margin-top:6px"><div><b><span class="estado ${srvOk?(au.srvOk?'ok':'mal'):''}"></span>Mini servidor</b><span>${srvOk?(au.srvOk?'Conectado':'Configurado, sin probar o con error'):'Hace falta para Binance y los avisos de Android'}</span></div><button class="btns" onclick="cfgServidor()">${srvOk?'Cambiar':'Configurar'}</button></div>
+ <div class="sw"><div><b><span class="estado ${au.binance&&!au.binance.error?'ok':(au.binance&&au.binance.error?'mal':'')}"></span>Binance (solo lectura)</b><span>${k.binKey?(au.binance&&!au.binance.error?`US$ ${au.binance.total_usdt.toLocaleString('es-AR')} · ${hora(au.ultBin)}`:(au.binance&&au.binance.error?esc(au.binance.error):'Sin consultar todavía')):'Ver tu saldo de Binance solo'}</span></div><button class="btns" onclick="cfgBinance()">${k.binKey?'Ver':'Conectar'}</button></div>
+ <div class="sw"><div><b><span class="estado ${au.buzon&&au.ultAvisos?'ok':''}"></span>Avisos del celu (Android)</b><span>${au.buzon?`Última revisión: ${hora(au.ultAvisos)}`:'Anota solos los pagos que te avisa el celu'}</span></div><button class="btns" onclick="cfgAvisos()">${au.buzon?'Ver':'Activar'}</button></div>`;
+}
+function cfgServidor(){
+ hoja(`<h3 class="t" style="margin-top:0">Mini servidor</h3><div class="nota">Es tu propio servidor gratis en Cloudflare. Pegá la dirección y la clave que te pasé.</div>
+ <label>Dirección</label><input class="txt" id="sUrl" placeholder="https://bmk-finanzas.TU-USUARIO.workers.dev" value="${esc(D.auto.srv.url)}" autocomplete="off">
+ <label>Clave del servidor</label><input class="txt" id="sClave" value="${esc(D.auto.srv.clave)}" autocomplete="off">`,()=>{
+  D.auto.srv={url:$('sUrl').value.trim().replace(/\/$/,''),clave:$('sClave').value.trim()};D.auto.srvOk=false;cambio();
+  A().conexiones.probar(D.auto.srv).then(r=>{D.auto.srvOk=true;cambio();toast(r.buzon?'Servidor conectado ✓':'Conectado, pero falta el buzón (KV)')}).catch(e=>{cambio();toast('No conecta: '+e.message)});
+ },'Guardar y probar');
+}
+function cfgBinance(){
+ const k=claves.leer(),b=D.auto.binance;
+ hoja(`<h3 class="t" style="margin-top:0">Binance</h3>
+ ${b&&!b.error?`<div class="card hero" style="padding:14px"><div class="lbl">Total en Binance</div><div class="big t" style="font-size:44px">US$ ${b.total_usdt.toLocaleString('es-AR')}</div><div class="nota">≈ ${f(b.total_usdt*D.cfg.dolar)} · ${new Date(D.auto.ultBin).toLocaleString('es-AR')}</div></div>
+  <div class="card" style="background:var(--ca2)">${b.activos.map(x=>`<div class="item"><div class="d"><b>${esc(x.activo)}</b><span>${x.cantidad.toLocaleString('es-AR',{maximumFractionDigits:8})} · ${esc(x.donde)}</span></div><div class="monto">US$ ${x.usdt.toLocaleString('es-AR')}</div></div>`).join('')}</div>
+  ${b.puedeOperar?'<div class="aviso"><b>Ojo:</b> esta clave puede operar o retirar. Creá una nueva solo con "Habilitar lectura".</div>':''}`:''}
+ ${b&&b.error?`<div class="aviso">${esc(b.error)}</div>`:''}
+ <div class="nota">En Binance: Perfil → Gestión de API → Crear API → tildá <b>solo "Habilitar lectura"</b>. La clave queda guardada únicamente en este celu.</div>
+ <label>API Key</label><input class="txt" id="bKey" value="${esc(k.binKey||'')}" autocomplete="off">
+ <label>Secret Key</label><input class="txt" id="bSec" type="password" value="${esc(k.binSecret||'')}" autocomplete="off">
+ <label>Mostrar el saldo en la billetera</label><select id="bBil"><option value="__nueva">Crear "Binance" (US$)</option>${D.bil.filter(x=>x.usd).map(x=>`<option value="${x.id}" ${D.auto.bilBinance===x.id?'selected':''}>${esc(x.n)}</option>`).join('')}</select>
+ ${k.binKey?`<button type="button" class="btnr" onclick="claves.guardar({});D.auto.binance=null;cerrar('velo2');cambio();toast('Binance desconectado')">Desconectar Binance</button>`:''}`,()=>{
+  const key=$('bKey').value.trim(),sec=$('bSec').value.trim();if(!key||!sec){toast('Faltan las claves');return false}
+  claves.guardar({...claves.leer(),binKey:key,binSecret:sec});
+  let bil=$('bBil').value;if(bil==='__nueva'){const ex=D.bil.find(x=>x.usd&&/binance/i.test(x.n));if(ex)bil=ex.id;else{bil=uid();D.bil.push({id:bil,n:'Binance',tipo:'cripto',m:0,usd:true})}}
+  D.auto.bilBinance=bil;D.auto.ultBin=0;cambio();actualizarBinance(true);
+ },'Guardar y consultar');
+}
+function cfgAvisos(){
+ if(!D.auto.buzon){const a=new Uint8Array(18);crypto.getRandomValues(a);D.auto.buzon=Array.from(a,x=>'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%56]).join('');guardar()}
+ const srv=D.auto.srv.url;const dir=srv?`${srv}/aviso?u=${D.auto.buzon}`:'(primero configurá el mini servidor)';
+ hoja(`<h3 class="t" style="margin-top:0">Avisos del celu</h3>
+ <div class="nota">Solo Android. La app <b>MacroDroid</b> (gratis) lee las notificaciones de Mercado Pago, los bancos y las billeteras y las manda a tu servidor. Cuando abrís BMK, se anotan solas.</div>
+ <label>Dirección de tu buzón (va en MacroDroid)</label><div class="copiable" id="cBuzon">${esc(dir)}</div>
+ <button type="button" class="btns" style="width:100%;padding:12px" onclick="navigator.clipboard.writeText('${esc(dir)}').then(()=>toast('Copiado')).catch(()=>toast('Mantené apretado el texto para copiar'))">Copiar dirección</button>
+ <div class="nota" style="margin-top:10px">Pasos en MacroDroid: <b>Agregar macro</b> → Disparador: <b>Notificación recibida</b> (elegí Mercado Pago, tu banco, Ualá, etc.) → Acción: <b>Solicitud HTTP</b>, método POST, la dirección de arriba, cuerpo:<br><span class="copiable" style="display:block">titulo=[notification_title]&amp;texto=[notification]&amp;app=[app_name]</span>tipo de contenido <b>application/x-www-form-urlencoded</b>.</div>
+ <button type="button" class="btnp" style="margin-top:12px" onclick="cerrar('velo2');traerAvisos(true)">Traer avisos ahora</button>
+ ${D.auto.ultAvisosRes?`<div class="nota" style="margin-top:8px">Última vez: ${esc(D.auto.ultAvisosRes)}</div>`:''}`,null);
+}
+// ---- tareas automáticas al abrir ----
+let autoCorriendo=false;
+async function automatizar(){
+ if(autoCorriendo||!window.BMKAuto)return;autoCorriendo=true;
+ try{
+  const ahora=Date.now();
+  if(D.auto.dolarAuto&&ahora-D.auto.ultDolar>60*60*1000){try{const d=await A().conexiones.dolar();const c=d[D.auto.casa]||d.oficial;if(c&&c.venta){D.cfg.dolar=c.venta;D.auto.ultDolar=ahora;cambio()}}catch(e){}}
+  if(D.auto.srv.url&&D.auto.srv.clave){
+   if(D.auto.buzon&&ahora-D.auto.ultAvisos>30*1000)await traerAvisos(false);
+   if(claves.leer().binKey&&ahora-D.auto.ultBin>10*60*1000)await actualizarBinance(false);
+  }
+ }finally{autoCorriendo=false}
+}
+async function actualizarBinance(mostrar){
+ const k=claves.leer();if(!k.binKey)return;
+ try{const r=await A().conexiones.binance(D.auto.srv,k.binKey,k.binSecret);D.auto.binance=r;D.auto.ultBin=Date.now();D.auto.srvOk=true;
+  const b=D.bil.find(x=>x.id===D.auto.bilBinance);if(b)b.m=r.total_usdt;cambio();if(mostrar){toast('Binance: US$ '+r.total_usdt.toLocaleString('es-AR'));cfgBinance()}}
+ catch(e){D.auto.binance={error:e.message};D.auto.ultBin=Date.now();cambio();if(mostrar){toast(e.message);cfgBinance()}}
+}
+async function traerAvisos(mostrar){
+ try{const r=await A().conexiones.traerAvisos(D.auto.srv,D.auto.buzon);D.auto.ultAvisos=Date.now();D.auto.srvOk=true;
+  const nuevos=[];let ign=0;const vistosAhora=new Set();
+  for(const av of r.avisos||[]){
+   const tx=A().huella(av.texto);if(vistosAhora.has(tx)||yaVisto('tx:'+tx)){ign++;continue}vistosAhora.add(tx);marcar('tx:'+tx);
+   const a=A().interpretarAviso(av.texto,{paquete:av.app,hoy:(av.hora||'').slice(0,10)||iso(hoyD())});
+   if(!a||a.rechazado){ign++;continue}
+   const m=avisoAMov(a);if(yaVisto(m.clave)){ign++;continue}aplicarMov(m,true);nuevos.push(m);
+  }
+  D.auto.ultAvisosRes=`${(r.avisos||[]).length} avisos: ${nuevos.length} anotados, ${ign} ignorados (no eran pagos o estaban repetidos)`;
+  if(nuevos.length){D.auto.recientes=nuevos.map(m=>m.id);cambio();toast(`Se anotaron ${nuevos.length} pago${nuevos.length>1?'s':''} solos`)}else guardar();
+  if(mostrar&&!nuevos.length)toast('No hay avisos nuevos');
+ }catch(e){if(mostrar)toast('Avisos: '+e.message)}
+ pintarRecientes();
+}
+function pintarRecientes(){
+ const el=$('autoAviso');if(!el)return;const ids=(D.auto.recientes||[]).filter(id=>D.mov.some(m=>m.id===id));
+ el.innerHTML=ids.length?`<div class="aviso az">Se anotaron solos <b>${ids.length} movimiento${ids.length>1?'s':''}</b> de los avisos del celu. <a href="#" style="color:var(--am)" onclick="verRecientes();return false">Revisarlos</a></div>`:'';
+}
+function verRecientes(){
+ const ids=D.auto.recientes||[];const ms=D.mov.filter(m=>ids.includes(m.id));
+ hoja(`<h3 class="t" style="margin-top:0">Anotados solos</h3><div class="nota">Tocá uno para ver el detalle o borrarlo si está mal.</div><div class="prev">${ms.map(m=>filaMov(m)).join('')}</div><button type="button" class="btnp" onclick="D.auto.recientes=[];cerrar('velo2');cambio()">Están bien</button>`,null);
+}
+
 // ---------- arranque ----------
 (async function(){
  try{const x=await window.BMK.leer();if(x&&x.catg)D=x;else guardar()}catch(e){toast('No se pudieron leer los datos')}
  D.cfg=Object.assign({bio:true,lockSeg:30,dolar:1450},D.cfg||{});
+ D.auto=Object.assign({claves:[],dolarAuto:true,casa:'oficial',ultDolar:0,ultBin:0,ultAvisos:0,binance:null,srv:{url:'',clave:''},buzon:'',bilBinance:''},D.auto||{});
+ if(window.BMK.revisarGuardado){const g=await window.BMK.revisarGuardado();let m='';
+  if(g.navegadorDeApp)m='<b>Estás en el navegador de otra app</b> (WhatsApp, Instagram…) y ahí <b>no se guarda nada</b>. Copiá el link y abrilo en '+(window.BMK.esIOS?'Safari':'Chrome')+', y después instalala.';
+  else if(!g.escribe||g.privado)m='<b>Este navegador no guarda los datos</b> (¿modo privado o incógnito?). Abrila en una pestaña normal e instalala.';
+  if(m)$('guardAviso').innerHTML='<div class="aviso">'+m+'</div>'}
+ ultimoGuardado=D._t||0;
  bio=await window.BMK.biometria();
  iconoBloqueo();
  render();
  pedirDesbloqueo();
+ automatizar();
  window.BMK.alCambiarEstado(activa=>{
   if(pidiendo)return; // el PIN del celu abre otra pantalla: no contar eso como salir
   if(!activa){salioEn=Date.now();guardar();if(desbloqueado&&D.cfg.lockSeg===0)bloquear();return}
+  automatizar();
   if(salioEn&&(Date.now()-salioEn)/1000>=D.cfg.lockSeg&&(desbloqueado||D.cfg.lockSeg===0)){bloquear();pedirDesbloqueo()}
  });
 })();
